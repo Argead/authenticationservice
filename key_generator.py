@@ -20,6 +20,45 @@ class APIKeyGenerator():
         #Assume entropy pool is not ready by default. Only update with explicit check.
         self.entropy_pool_ready = False
 
+    #Main public method for this class. Creates and returns a secret key to sign API requests, and a public identifier.
+    # If request succeeds, error will be empty. If not, both keys will return as empty strings and error will be an 
+    # instance of Exception.
+    def create_key_pair(self):
+        api_key = ''
+        identifier = ''
+        error = None
+        try:
+            new_key = self._create_API_key()
+            if new_key[1] != None:
+                raise new_key[1]
+            api_key = new_key[0]
+            new_identifier = self._create_API_key_identifier(api_key)
+            if new_identifier[1] != None:
+                raise new_identifier[1]
+            identifier = new_identifier[0]
+        except Exception as e:
+            api_key = ''
+            identifier = ''
+            error = e
+        finally:
+            return (api_key, identifier, error)
+
+    #Internal method used to check if the underlying source of entropy is ready for usage.
+    #No explicit return value. Instead, updates class's internal state by manipulating the entropy_pool_ready member.
+    def _entropy_health_check(self):
+        #This appraoch seems like a bad one - reading from kernel space. How else could the entropy pool's status be evaluated?
+        # How about moving to Python3.6 and using GRND_NONBLOCK flag?
+        try:
+            #Current implementation of this method is designed to work only on nix systems
+            #TODO: Implement for other OSs.
+            assert(os.uname().sysname == "Linux")
+            pool = subprocess.call(['cat', '/proc/sys/kernel/random/entropy_avail'], stdout=subprocess.PIPE)
+            available_entropy = int(pool.stdout)
+            assert(available_entropy >= self.REQUIRED_MIN_ENTROPY)
+            self.entropy_pool_ready = True
+        except Exception as e:
+            self.entropy_pool_ready = False
+
     #Internal method used to create and return a new API key.
     #Returns a tuple of (key, error). error is None if function call succeeds.
     #In case an exception occurs, returns a tuple of ('', error) where error is an Exception instance.
@@ -85,36 +124,22 @@ class APIKeyGenerator():
         finally:
             return (is_valid, error)
 
+    def _create_API_key_identifier(self, api_key):
+        key = ''
+        error = None
+        try:
+            md = hashlib.md5()
+            md.update(api_key)
+            output = md.hexdigest()[:self.ID_KEY_LENGTH]
+            key = output.upper()
+        except Exception as e:
+            key = ''
+            error = e
+        finally:
+            return (key, error)
 
 
 
 
-    #Change this approach => hash the api key and modify it? Rather than drawing on entropy pool more
-    def create_api_key_identifier(self, bits):
-        random_bits = os.urandom(bits)
-        #TODO: replace this implementation. Keep interface the same.
-        md = hashlib.md5()
-        md.update(random_bits)
-        output = md.hexdigest()[:self.ID_KEY_LENGTH]
-        key = output.upper()
-        return key
 
-    def create_key_pair(self):
-        #TODO: replace this magic numbers with configuration
-        #TODO: add exception handling
-        api_key = create_api_key(20)
-        identifier = create_api_key_identifier(10)
-        #Why return a tuple? why not JSONify the keys?
-        return (api_key, identifier)
-
-    def entropy_health_check(self):
-        #This appraoch seems like a bad one - reading from kernel space. How else could the entropy pool's status be evaluated?
-        # How about moving to Python3.6 and using GRND_NONBLOCK flag?
-    
-        #Read from entropy_avail will only work on Linux
-        #TODO: Exception handling for the assertion
-        assert(os.uname().sysname == "Linux")
-        pool = subprocess.call(['cat', '/proc/sys/kernel/random/entropy_avail'], stdout=subprocess.PIPE)
-        available_entropy = int(pool.stdout)
-        return available_entropy >= self.REQUIRED_MIN_ENTROPY
 
