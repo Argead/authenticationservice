@@ -3,10 +3,12 @@ Module used to create and return an API key and a public identifier for that key
 """
 import hashlib
 import os
+import subprocess
 
 #Constants to define the size of the API secret key and the public identifier.
 API_KEY_LENGTH = 40
 ID_KEY_LENGTH = 20
+REQUIRED_MIN_ENTROPY = 100
 
 def create_key_pair():
     #TODO: replace this magic numbers with configuration
@@ -46,4 +48,12 @@ def create_api_key_identifier(bits):
 
 
 def entropy_health_check():
-    return
+    #This appraoch seems like a bad one - reading from kernel space. How else could the entropy pool's status be evaluated?
+    # How about moving to Python3.6 and using GRND_NONBLOCK flag?
+
+    #Read from entropy_avail will only work on Linux
+    #TODO: Exception handling for the assertion
+    assert(os.uname().sysname == "Linux")
+    pool = subprocess.call(['cat', '/proc/sys/kernel/random/entropy_avail'], stdout=subprocess.PIPE)
+    available_entropy = int(pool.stdout)
+    return available_entropy >= REQUIRED_MIN_ENTROPY
