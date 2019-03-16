@@ -6,15 +6,17 @@ import os
 import subprocess
 
 class APIKeyGenerator():
-    def __init__(self, random_bits=20, api_key_length=40, id_key_length=20, req_min_entropy=100, min_key_length=10):
+    def __init__(self, random_bits=20, api_key_length=40, id_key_length=20, req_min_entropy=100, min_api_key_length=10, max_api_key_length=60):
         #Constants to define the size of the API secret key and the public identifier.
+        #Impose constraints on the size of the API key in case API_KEY_SIZE is modified
         #TODO: clean up these constants
         #TODO: add validation for initialization. Need to bracket possible values, and note those limits in documentation.
         self.RANDOM_BITS = random_bits
         self.API_KEY_LENGTH = api_key_length
         self.ID_KEY_LENGTH = id_key_length
         self.REQUIRED_MIN_ENTROPY = req_min_entropy
-        self.MIN_KEY_LENGTH = min_key_length
+        self.MIN_API_KEY_LENGTH = MIN_API_KEY_LENGTH
+        self.MAX_API_KEY_LENGTH = MAX_API_KEY_LENGTH
         #Assume entropy pool is not ready by default. Only update with explicit check.
         self.entropy_pool_ready = False
 
@@ -22,36 +24,66 @@ class APIKeyGenerator():
     #Returns a tuple of (key, error). error is None if function call succeeds.
     #In case an exception occurs, returns a tuple of ('', error) where error is an Exception instance.
     def _create_API_key(self):
-        #TODO: clean up this method. Too long, too complex, too many return statements.
-        #      divide up into multiple functions
-        self._entropy_health_check()
-        if self.entropy_pool_ready:
-            try:
-                assert(type(self.RANDOM_BITS) == int)
-                assert(self.RANDOM_BITS > 0 and self.RANDOM_BITS < 100)
-            except Exception as e:
-                error = Exception("Invalid value for RANDOM BITS")
-                return ('', error)
-            bits = os.urandom(self.RANDOM_BITS)
-            #TODO: develop more options than just SHA256. Strategy pattern (?)
-            sha = hashlib.sha256()
-            sha.update(bits)
-            sha_output = sha.hexdigest()
+        key = ''
+        error = None
+        try:
+            self._entropy_health_check()
+            if self.entropy_pool_ready:
 
-            #Impose constraints on the size of the API key in case API_KEY_SIZE is modified
-            try:
-                assert(type(self.API_KEY_LENGTH == int))
-                assert(self.API_KEY_LENGTH <= len(sha_output) and self.API_KEY_LENGTH > self.MIN_KEY_LENGTH)
+                #check for random bits first
+                bit_valid = self._validate_random_bits()
+                if bit_valid[0] == False or bit_valid[1] != None:
+                    raise bit_valid[1]
+                    
+                #check for key length
+                key_valid = self._validate_api_key_length()
+                if key_valid[0] == False or key_valid[1] != None:
+                    raise key_valid[1]
+
+                #if checks pass, create new API key
+                bits = os.urandom(self.RANDOM_BITS)
+                sha = hashlib.sha256()
+                sha.update(bits)
+                sha_output = sha.hexdigest()
                 key = sha_output[:self.API_KEY_LENGTH]
-                return (key, None)
-            except AssertionError:
-                error = Exception("API Key Length parameters are invalid.")
-                return ('', error)
-        else:
-            error = Exception("The entropy pool is not ready")
-            return ('', error)
+            else:
+                raise Exception("The entropy pool is not ready")
+        except Exception as e:
+            error = e
+        finally:
+            return (key, error)
+
+    #Helper method to validate RANDOM_BITS member
+    #TODO: replace magic numbers. Why these specific constraints?
+    def _validate_random_bits(self):
+        is_valid = False
+        error = None
+        try:
+            assert(self.RANDOM_BITS)
+            assert(type(self.RANDOM_BITS) == int)
+            assert(self.RANDOM_BITS > 10 and self.RANDOM_BITS < 100)
+            is_valid = True
+        except Exception as e:
+            error = Exception("Invalid value for RANDOM_BITS member")
+        finally:
+            return (is_valid, error)
 
 
+    #Helper method to validate API_KEY_LENGTH member
+    #TODO: Exception: what if self.API_KEY_LENGTH does not exist? what about general exceptions?
+    def _validate_api_key_length(self):
+        is_valid = False
+        error = None
+        try:
+            assert(self.API_KEY_LENGTH)
+            assert(type(self.API_KEY_LENGTH) == int)
+            assert(self.API_KEY_LENGTH >= self.MIN_API_KEY_LENGTH)
+            assert(self.API_KEY_LENGTH <= self.MAX_API_KEY_LENGTH)
+            is_valid = True
+        except Exception as e:
+            error = Exception("Invalid value for API_KEY_LENGTH member")
+        finally:
+            return (is_valid, error)
 
 
 
