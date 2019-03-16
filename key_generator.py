@@ -6,9 +6,11 @@ import os
 import subprocess
 
 class APIKeyGenerator():
-    def __init__(self, api_key_length, id_key_length, req_min_entropy, min_key_length):
+    def __init__(self, random_bits=20, api_key_length=40, id_key_length=20, req_min_entropy=100, min_key_length=10):
         #Constants to define the size of the API secret key and the public identifier.
         #TODO: clean up these constants
+        #TODO: add validation for initialization. Need to bracket possible values, and note those limits in documentation.
+        self.RANDOM_BITS = random_bits
         self.API_KEY_LENGTH = api_key_length
         self.ID_KEY_LENGTH = id_key_length
         self.REQUIRED_MIN_ENTROPY = req_min_entropy
@@ -17,14 +19,13 @@ class APIKeyGenerator():
         self.entropy_pool_ready = False
 
     #Internal method used to create and return a new API key.
-    # random_bits is an int describing the number of bits to take from os.urandom()
     # returns a tuple of (key, error). error is None if function call succeeds.
-    def _create_API_key(self, random_bits):
+    def _create_API_key(self):
         #TODO: clean up this method. Too long, too complex, too many return statements.
         #      divide up into multiple functions
         self._entropy_health_check()
         if self.entropy_pool_ready:
-            bits = os.urandom(random_bits)
+            bits = os.urandom(self.RANDOM_BITS)
             #TODO: develop more options than just SHA256. Strategy pattern (?)
             sha = hashlib.sha256()
             sha.update(bits)
