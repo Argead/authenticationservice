@@ -19,12 +19,19 @@ class APIKeyGenerator():
         self.entropy_pool_ready = False
 
     #Internal method used to create and return a new API key.
-    # returns a tuple of (key, error). error is None if function call succeeds.
+    #Returns a tuple of (key, error). error is None if function call succeeds.
+    #In case an exception occurs, returns a tuple of ('', error) where error is an Exception instance.
     def _create_API_key(self):
         #TODO: clean up this method. Too long, too complex, too many return statements.
         #      divide up into multiple functions
         self._entropy_health_check()
         if self.entropy_pool_ready:
+            try:
+                assert(type(self.RANDOM_BITS) == int)
+                assert(self.RANDOM_BITS > 0 and self.RANDOM_BITS < 100)
+            except Exception as e:
+                error = Exception("Invalid value for RANDOM BITS")
+                return ('', error)
             bits = os.urandom(self.RANDOM_BITS)
             #TODO: develop more options than just SHA256. Strategy pattern (?)
             sha = hashlib.sha256()
