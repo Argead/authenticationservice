@@ -20,8 +20,8 @@ class APIKeyGenerator():
     # Returns a tuple of two strings: (api_key, identifier).
     def create_key_pair(self):
         try:
-            new_api_key = self.create_one_api_key()
-            new_identifier = self.create_api_key_identifier(new_api_key)
+            new_api_key = self._create_one_api_key()
+            new_identifier = self._create_api_key_identifier(new_api_key)
             return (new_api_key, new_api_key_identifier)
         except Exception as e:
             raise e
