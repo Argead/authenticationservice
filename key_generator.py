@@ -45,7 +45,7 @@ class APIKeyGenerator():
     #Internal method used to create and return a new API key.
     #Returns a single valid API key as a string, or raises an Exception
     def _create_one_api_key(self):
-        self._entropy_health_check(self)
+        self._entropy_health_check()
         try:
             assert(self.entropy_pool_ready)
             bits = os.urandom(self.RANDOM_BITS)
