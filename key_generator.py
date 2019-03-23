@@ -22,7 +22,7 @@ class APIKeyGenerator():
         try:
             new_api_key = self._create_one_api_key()
             new_identifier = self._create_api_key_identifier(new_api_key)
-            return (new_api_key, new_api_key_identifier)
+            return (new_api_key, new_identifier)
         except Exception as e:
             raise e
 
@@ -35,7 +35,7 @@ class APIKeyGenerator():
             #Current implementation of this method is designed to work only on nix systems
             #TODO: Implement for other OSs.
             assert(os.uname().sysname == "Linux")
-            pool = subprocess.call(['cat', '/proc/sys/kernel/random/entropy_avail'], stdout=subprocess.PIPE)
+            pool = subprocess.run(['cat', '/proc/sys/kernel/random/entropy_avail'], stdout=subprocess.PIPE)
             available_entropy = int(pool.stdout)
             assert(available_entropy >= self.REQUIRED_MIN_ENTROPY)
             self.entropy_pool_ready = True
@@ -64,10 +64,12 @@ class APIKeyGenerator():
     def _create_api_key_identifier(self, api_key):
         try:
             #TODO: implement pattern for multiple underlying cyphers
+            #string has to be encoded prior to hashing for this cypher
+            api_key = api_key.encode()
             md = hashlib.md5()
             md.update(api_key)
             result = md.hexdigest()[:self.ID_KEY_LENGTH]
-            identifier = output.upper()
+            identifier = result.upper()
             return identifier
         except Exception as e:
             raise e
