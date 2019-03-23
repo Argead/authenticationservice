@@ -10,7 +10,12 @@ class RedisQueueManager:
         api_key, identifier = self._get_new_key()
         data = self._jsonify_key(api_key, identifier)
         r.rpush("queue:keys", data)
-	return True
+        return True
+
+    def fill_queue(self):
+        if self.r.llen() < 10:
+            self.push_keys_to_queue()
+            self.fill_queue()
 
     def _jsonify_key(api_key, identifier):
         data = {
@@ -22,3 +27,4 @@ class RedisQueueManager:
     def _get_new_key():
         gen = APIKeyGenerator()
         return gen.create_key_pair()
+        
