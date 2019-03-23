@@ -27,4 +27,8 @@ class RedisQueueManager:
     def _get_new_key():
         gen = APIKeyGenerator()
         return gen.create_key_pair()
-        
+
+
+if __name__ == "__main__":
+    q = RedisQueueManager()
+    q.fill_queue()
