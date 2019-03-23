@@ -6,9 +6,11 @@ class RedisQueueManager:
     def __init__(self):
         self.r = redis.Redis(host="redis-server", port=6379)
 
-    def push_to_queue(self, api_key, identifier):
+    def push_keys_to_queue(self):
+        api_key, identifier = self._get_new_key()
         data = self._jsonify_key(api_key, identifier)
         r.rpush("queue:keys", data)
+	return True
 
     def _jsonify_key(api_key, identifier):
         data = {
@@ -18,4 +20,5 @@ class RedisQueueManager:
         return json.dumps(data)
 
     def _get_new_key():
-        return
+        gen = APIKeyGenerator()
+        return gen.create_key_pair()
