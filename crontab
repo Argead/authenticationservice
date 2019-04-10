@@ -1,3 +1,0 @@
-* * * * * python3 /app/redis_manager.py
-@reboot python3 /app/redis_manager.py
-
