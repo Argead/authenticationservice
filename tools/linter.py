@@ -39,9 +39,20 @@ def get_project_root_directory():
     project_root = os.sep.join(cwd_parts)
     return project_root
 
+def get_lint_config_file():
+    """Retrieve location of pylintrc config file."""
+    project_root = get_project_root_directory()
+    parts = project_root.split(os.sep)
+    parts = parts[:4]
+    parts.append("tools")
+    parts.append("qa.pylintrc")
+    result = os.sep.join(parts)
+    return result
+
 def pylint_evaluation(target):
     """Run pylint evaluation in new process."""
-    arguments = ["pylint", "--rcfile", "qa.pylintrc", target]
+    config = get_lint_config_file()
+    arguments = ["pylint", "--rcfile", config, target]
     result = subprocess.run(arguments, stdout=subprocess.PIPE)
     result = result.stdout.decode("ascii")
     return result
