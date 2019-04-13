@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Captures output of linting tools. Depends on pylint and pydocstlye."""
+"""Captures output of linting tools. Dependencies: pylint and pydocstlye."""
 
 import os
 import subprocess
@@ -80,5 +80,3 @@ def _main_routine():
 
 if __name__ == "__main__":
     _main_routine()
-
-#pylint --max-line-length=79 --rcfile qa.pylintrc filename.py
