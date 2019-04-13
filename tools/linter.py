@@ -21,13 +21,13 @@ def find_target_in_project(project_root, target):
     Return string name of the file or directory matching the target.
     Return empty string if target is not found in the project.
     """
-    for _, dirs, files in os.walk(os.chdir(project_root), topdown=True):
+    for root, dirs, files in os.walk(os.chdir(project_root), topdown=False):
         for name in files:
             if name == target:
-                return os.path.abspath(name)
+                return os.path.abspath(os.path.join(root, name))
         for name in dirs:
             if name == target:
-                return os.path.abspath(name)
+                return os.path.abspath(os.path.join(root, name))
     return ""
 
 def get_project_root_directory():
@@ -70,6 +70,9 @@ def _main_routine():
     if not target_is_in_cwd(target):
         project_root = get_project_root_directory()
         target = find_target_in_project(project_root, target)
+    if target == "":
+        print("Target not found in project directories.")
+        sys.exit()
     pydoc_eval = pydoc_evaluation(target)
     pylint_eval = pylint_evaluation(target)
     print(pydoc_eval)
