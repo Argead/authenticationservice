@@ -1,2 +1,2 @@
-# authenticationservice
-Authentication service built with Python, Docker
+# API services
+API services built in Python.
