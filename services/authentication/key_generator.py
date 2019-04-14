@@ -44,7 +44,7 @@ class BasicKeyGenerator(KeyGeneratorABC):
     def check_generator_health(self):
         """Check for a randomness source."""
         try:
-            os.urandom()
+            os.urandom(self.random_bits)
             self.entropy_pool = True
         except NotImplementedError:
             self.entropy_pool = False
