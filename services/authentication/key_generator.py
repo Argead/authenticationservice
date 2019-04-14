@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import hashlib
 import os
 
-class KeyGeneratorABC(ABC):
+class _KeyGeneratorABC(ABC):
     """Base class for key generator implementations."""
 
     @abstractmethod
@@ -18,7 +18,7 @@ class KeyGeneratorABC(ABC):
         """Interface for single initial method of abc class."""
         return
 
-class BasicKeyGenerator(KeyGeneratorABC):
+class BasicKeyGenerator(_KeyGeneratorABC):
     """Simplest key generator. Returns 40 char unique key."""
 
     def __init__(self):

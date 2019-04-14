@@ -3,7 +3,7 @@
 
 from abc import ABC, abstractmethod
 
-class KeyValidatorABC(ABC):
+class _KeyValidatorABC(ABC):
     """Base class for KeyValidator implementations."""
 
     @abstractmethod
@@ -17,7 +17,7 @@ class KeyValidatorABC(ABC):
         return
 
 
-class BasicKeyValidator(KeyValidatorABC):
+class BasicKeyValidator(_KeyValidatorABC):
     """Most basic KeyValidator implementation. Only checks key length."""
 
     def __init__(self, cipher, key_length):
