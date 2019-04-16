@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 """Test suite for the KeyGenerator classes."""
 
+import os
 import unittest
+import unittest.mock
 from ...authentication.key_generator import BasicKeyGenerator, _KeyGeneratorABC
 
 class TestBasicKeyGenerator(unittest.TestCase):
@@ -12,6 +14,12 @@ class TestBasicKeyGenerator(unittest.TestCase):
         generator = BasicKeyGenerator()
         self.assertIsInstance(generator, BasicKeyGenerator)
         self.assertIsInstance(generator, _KeyGeneratorABC)
+
+    def test_check_generator_health_method(self):
+        """Test if the health_check method succeeds."""
+        generator = BasicKeyGenerator()
+        generator.check_generator_health()
+        self.assertTrue(generator.entropy_pool)
 
     def test_BasicKeyGenerator_can_create_api_keys(self):
         """Test if the generate_api_key method produces output."""
