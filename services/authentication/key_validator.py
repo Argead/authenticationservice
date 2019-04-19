@@ -9,12 +9,10 @@ class _KeyValidatorABC(ABC):
     @abstractmethod
     def validate_api_key(self, api_key):
         """Validate provided api key for well-formedness."""
-        return
 
     @abstractmethod
     def create_request_signature(self, api_key, request):
         """For more complex signature scheme, resign request."""
-        return
 
 
 class BasicKeyValidator(_KeyValidatorABC):

@@ -43,7 +43,5 @@ class TestBasicKeyValidator(unittest.TestCase):
             fake_request = "request"
             validator = BasicKeyValidator(cipher, key_length)
             res = validator.create_request_signature(fake_key, fake_request)
-            #This assertion fails, but should never be reached.
-            self.assertEqual(res, fake_key)
         except NotImplementedError as error:
             self.assertIsInstance(error, NotImplementedError)

@@ -11,12 +11,10 @@ class _KeyGeneratorABC(ABC):
     @abstractmethod
     def check_generator_health(self):
         """Check status of underlying entropy pool."""
-        return
 
     @abstractmethod
     def generate_api_key(self):
         """Interface for single initial method of abc class."""
-        return
 
 class BasicKeyGenerator(_KeyGeneratorABC):
     """Simplest key generator. Returns 40 char unique key."""
@@ -31,7 +29,7 @@ class BasicKeyGenerator(_KeyGeneratorABC):
 
     def generate_api_key(self):
         """Generate a single 40 char key. No choice for cipher yet."""
-        assert self.entropy_pool
+        assert self.entropy_pool, "No entropy source available."
         try:
             random_bits = os.urandom(self.random_bits)
             self.cipher.update(random_bits)

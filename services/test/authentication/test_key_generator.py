@@ -56,5 +56,35 @@ class TestBasicKeyGenerator(unittest.TestCase):
         seen_keys_set = set(seen_keys)
         self.assertEqual(len(seen_keys), len(seen_keys_set))
 
-if __name__ == "__main__":
-    unittest.main()
+class TestFailingScenariosForBasicKeyGenerator(unittest.TestCase):
+    """Test cases for scenarios where key generator fails."""
+
+    def setUp(self):
+        """Remove access to underlying source of entropy."""
+        self.holder = os.urandom
+        os.urandom = unittest.mock.Mock(side_effect=NotImplementedError)
+
+    def tearDown(self):
+        """Restore normal functionality to os.urandom."""
+        os.urandom = self.holder
+
+    def helper_call_to_os_urandom(self):
+        """Helper method to call os.urandom."""
+        try:
+            os.urandom()
+        except NotImplementedError as err:
+            return err
+
+    def test_os_urandom_can_fail_using_a_mock(self):
+        """Test that os.urandom can be mocked to fail."""
+        failing_urandom = self.helper_call_to_os_urandom()
+        self.assertIsInstance(failing_urandom, NotImplementedError)
+
+    def test_key_generation_fails_without_os_urandom(self):
+        """Test that key generation fails without os.urandom."""
+        try:
+            generator = BasicKeyGenerator()
+            generator.generate_api_key()
+        except AssertionError as err:
+            err = str(err)
+            self.assertEqual(err, "No entropy source available.")
